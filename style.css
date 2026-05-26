@@ -1,38 +1,79 @@
 /* --- DESIGN SYSTEM & KEY STYLES --- */
 :root {
     color-scheme: dark;
-    --bg-primary: #060913;
-    --bg-secondary: rgba(13, 17, 34, 0.85);
-    --bg-glass: rgba(18, 24, 48, 0.45);
-    --bg-glass-active: rgba(255, 255, 255, 0.05);
-    --border-glass: rgba(255, 255, 255, 0.06);
-    --border-glass-focus: rgba(46, 98, 255, 0.4);
+    --bg-primary: #09090b; /* Vercel zinc-950 dark */
+    --bg-secondary: #0e0e11;
+    --bg-glass: #18181b; /* zinc-900 */
+    --bg-glass-panel: #18181b;
+    --bg-glass-active: rgba(255, 255, 255, 0.08);
+    --border-glass: rgba(255, 255, 255, 0.08);
+    --border-glass-focus: rgba(255, 255, 255, 0.3);
     
-    --accent: #2e66ff;
-    --accent-glow: rgba(46, 102, 255, 0.35);
-    --accent-light: #5d8aff;
+    --bg-item: rgba(255, 255, 255, 0.02);
+    --bg-item-hover: rgba(255, 255, 255, 0.05);
+    --border-item: rgba(255, 255, 255, 0.04);
+    --bg-input: rgba(255, 255, 255, 0.04);
+    --bg-track: rgba(255, 255, 255, 0.06);
+    
+    --accent: #ffffff; /* Clean white primary accent for dark mode */
+    --accent-glow: rgba(255, 255, 255, 0.05);
+    --accent-light: #f4f4f5;
     
     --success: #10b981;
-    --success-glow: rgba(16, 185, 129, 0.2);
+    --success-glow: rgba(16, 185, 129, 0.1);
     
     --danger: #ef4444;
-    --danger-glow: rgba(239, 68, 68, 0.2);
+    --danger-glow: rgba(239, 68, 68, 0.1);
     
     --warning: #f59e0b;
-    --warning-glow: rgba(245, 158, 11, 0.2);
+    --warning-glow: rgba(245, 158, 11, 0.1);
     
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-primary: #f4f4f5; /* zinc-100 */
+    --text-secondary: #a1a1aa; /* zinc-400 */
+    --text-muted: #71717a; /* zinc-500 */
     
-    --radius-xl: 24px;
-    --radius-lg: 16px;
-    --radius-md: 12px;
-    --radius-sm: 8px;
+    --radius-xl: 12px; /* Minimalist tighter borders */
+    --radius-lg: 8px;
+    --radius-md: 6px;
+    --radius-sm: 4px;
     
-    --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     --font-title: 'Outfit', sans-serif;
     --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+body.light-mode {
+    color-scheme: light;
+    --bg-primary: #fafafa; /* Minimalist clean zinc-50 light background */
+    --bg-secondary: #ffffff;
+    --bg-glass: #ffffff; /* Pure white card */
+    --bg-glass-panel: #ffffff;
+    --bg-glass-active: rgba(0, 0, 0, 0.04);
+    --border-glass: rgba(0, 0, 0, 0.08);
+    --border-glass-focus: rgba(0, 0, 0, 0.3);
+    
+    --bg-item: #ffffff;
+    --bg-item-hover: #f4f4f5;
+    --border-item: rgba(0, 0, 0, 0.06);
+    --bg-input: #ffffff;
+    --bg-track: #e4e4e7;
+    
+    --accent: #09090b; /* Zinc-950 black primary accent for light mode */
+    --accent-glow: rgba(9, 9, 11, 0.05);
+    --accent-light: #27272a;
+    
+    --success: #059669;
+    --success-glow: rgba(5, 150, 105, 0.1);
+    
+    --danger: #dc2626;
+    --danger-glow: rgba(220, 38, 38, 0.1);
+    
+    --warning: #d97706;
+    --warning-glow: rgba(217, 119, 6, 0.1);
+    
+    --text-primary: #09090b; /* zinc-950 */
+    --text-secondary: #52525b; /* zinc-600 */
+    --text-muted: #71717a; /* zinc-500 */
 }
 
 * {
@@ -52,33 +93,7 @@ body {
 
 /* Background Glows */
 .bg-glow {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(140px);
-    z-index: -1;
-    opacity: 0.45;
-    pointer-events: none;
-}
-.bg-glow-1 {
-    width: 45vw;
-    height: 45vw;
-    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-    top: -10vw;
-    right: -10vw;
-}
-.bg-glow-2 {
-    width: 40vw;
-    height: 40vw;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
-    bottom: -10vw;
-    left: -5vw;
-}
-.bg-glow-3 {
-    width: 35vw;
-    height: 35vw;
-    background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
-    top: 30%;
-    left: 25%;
+    display: none !important;
 }
 
 /* Typography & Helpers */
@@ -190,13 +205,11 @@ h1, h2, h3, h4, h5, h6 {
 /* Glassmorphism Panel styles */
 .glass {
     background: var(--bg-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
 }
 .glass-panel {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-glass-panel);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-md);
     padding: 1rem;
@@ -326,9 +339,15 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--bg-glass-active);
 }
 .nav-item.active {
-    color: white;
+    color: var(--bg-secondary);
     background-color: var(--accent);
-    box-shadow: 0 4px 15px var(--accent-glow);
+    box-shadow: 0 2px 8px var(--accent-glow);
+}
+body.light-mode .nav-item.active {
+    color: #ffffff;
+}
+body.dark-mode .nav-item.active {
+    color: #09090b;
 }
 .nav-item i {
     width: 20px;
@@ -410,17 +429,17 @@ h1, h2, h3, h4, h5, h6 {
 .header-search input {
     width: 100%;
     padding: 0.75rem 1rem 0.75rem 2.7rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-input);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-md);
-    color: white;
+    color: var(--text-primary);
     outline: none;
     font-family: inherit;
     transition: var(--transition-smooth);
 }
 .header-search input:focus {
-    border-color: var(--accent);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-glass-focus);
+    background: var(--bg-glass-active);
 }
 .header-actions {
     display: flex;
@@ -430,7 +449,7 @@ h1, h2, h3, h4, h5, h6 {
 .currency-selector select {
     background: none;
     border: none;
-    color: white;
+    color: var(--text-primary);
     padding: 0.75rem 1.25rem;
     font-family: var(--font-title);
     font-weight: 500;
@@ -438,8 +457,8 @@ h1, h2, h3, h4, h5, h6 {
     cursor: pointer;
 }
 .currency-selector select option {
-    background-color: var(--bg-primary);
-    color: white;
+    background-color: var(--bg-glass);
+    color: var(--text-primary);
 }
 
 /* DASHBOARD & CONTENT PAGES */
@@ -591,13 +610,13 @@ h1, h2, h3, h4, h5, h6 {
     justify-content: space-between;
     padding: 0.75rem 1rem;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--bg-item);
+    border: 1px solid var(--border-item);
     transition: var(--transition-smooth);
 }
 .transaction-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--bg-item-hover);
+    border-color: var(--border-glass-focus);
 }
 .trans-item-left {
     display: flex;
@@ -660,7 +679,7 @@ h1, h2, h3, h4, h5, h6 {
 .budget-progress-track {
     width: 100%;
     height: 8px;
-    background: rgba(255,255,255,0.06);
+    background: var(--bg-track);
     border-radius: 99px;
     overflow: hidden;
 }
@@ -705,10 +724,10 @@ h1, h2, h3, h4, h5, h6 {
 .filter-group select {
     width: 100%;
     padding: 0.7rem 1rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-input);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-md);
-    color: white;
+    color: var(--text-primary);
     outline: none;
     font-family: inherit;
     font-size: 0.9rem;
@@ -716,13 +735,12 @@ h1, h2, h3, h4, h5, h6 {
     transition: var(--transition-smooth);
 }
 .filter-group select:focus {
-    border-color: var(--accent);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 10px rgba(46, 102, 255, 0.15);
+    border-color: var(--border-glass-focus);
+    background: var(--bg-glass-active);
 }
 .filter-group select option {
-    background-color: var(--bg-primary);
-    color: white;
+    background-color: var(--bg-glass);
+    color: var(--text-primary);
     padding: 0.5rem;
 }
 
@@ -783,7 +801,7 @@ h1, h2, h3, h4, h5, h6 {
     transition: var(--transition-smooth);
 }
 .btn-icon:hover {
-    color: white;
+    color: var(--text-primary);
     background-color: var(--bg-glass-active);
 }
 .btn-icon.delete:hover {
@@ -915,13 +933,13 @@ h1, h2, h3, h4, h5, h6 {
 .goal-item-card {
     padding: 1.25rem;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.01);
-    border: 1px solid var(--border-glass);
+    background: var(--bg-item);
+    border: 1px solid var(--border-item);
     transition: var(--transition-smooth);
 }
 .goal-item-card:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--bg-item-hover);
+    border-color: var(--border-glass-focus);
 }
 .goal-item-header {
     display: flex;
@@ -965,9 +983,13 @@ h1, h2, h3, h4, h5, h6 {
 .budget-item-card {
     padding: 1.25rem;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.01);
-    border: 1px solid var(--border-glass);
+    background: var(--bg-item);
+    border: 1px solid var(--border-item);
     transition: var(--transition-smooth);
+}
+.budget-item-card:hover {
+    background: var(--bg-item-hover);
+    border-color: var(--border-glass-focus);
 }
 .budget-card-meta {
     display: flex;
@@ -1007,17 +1029,16 @@ h1, h2, h3, h4, h5, h6 {
 .input-group select, 
 .input-group textarea {
     padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-input);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-md);
-    color: white;
+    color: var(--text-primary);
     outline: none;
     font-family: inherit;
     transition: var(--transition-smooth);
 }
 
 select {
-    color-scheme: dark;
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -1029,14 +1050,14 @@ select {
 }
 
 select option {
-    background-color: #0c0f1d !important;
-    color: #f8fafc !important;
+    background-color: var(--bg-glass) !important;
+    color: var(--text-primary) !important;
 }
 .input-group input:focus, 
 .input-group select:focus, 
 .input-group textarea:focus {
-    border-color: var(--accent);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-glass-focus);
+    background: var(--bg-glass-active);
 }
 .input-large {
     font-size: 1.5rem !important;
@@ -1130,7 +1151,7 @@ select option {
     transition: var(--transition-smooth);
 }
 .btn-close:hover {
-    color: white;
+    color: var(--text-primary);
 }
 .modal-footer {
     display: flex;
@@ -1160,7 +1181,7 @@ select option {
 }
 .tab-headers {
     display: flex;
-    background: rgba(255,255,255,0.03);
+    background: var(--bg-glass-active);
     border: 1px solid var(--border-glass);
     border-radius: var(--radius-md);
     padding: 0.25rem;
@@ -1181,7 +1202,7 @@ select option {
 }
 .tab-btn.active {
     background: var(--accent);
-    color: white;
+    color: var(--bg-secondary);
 }
 .auth-form {
     display: none;

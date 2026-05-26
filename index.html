@@ -166,6 +166,9 @@
                     <input type="text" id="global-search" placeholder="Tranzaksiyalarni qidirish..." oninput="handleGlobalSearch(this.value)">
                 </div>
                 <div class="header-actions">
+                    <button class="btn btn-outline btn-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="Mavzuni o'zgartirish" style="padding: 0.65rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; height: 38px; width: 38px;">
+                        <i data-lucide="sun" style="width: 18px; height: 18px;"></i>
+                    </button>
                     <div class="currency-selector glass">
                         <select id="currency-select" onchange="changeCurrency(this.value)">
                             <option value="UZS">So'm (UZS)</option>

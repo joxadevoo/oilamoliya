@@ -1,3 +1,15 @@
+// --- INITIAL THEME LOAD ---
+(function() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
+    } else {
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+    }
+})();
+
 // --- STATE MANAGEMENT ---
 let state = {
     isDemo: true,
@@ -149,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run Router on load to direct to correct URL page
     handleRouting();
     
+    window.updateThemeToggleIcon();
     lucide.createIcons();
 });
 
@@ -982,6 +995,12 @@ function renderCharts() {
     
     if (!flowCtx || !catCtx) return;
     
+    // Dynamic theme colors
+    const isLight = document.body.classList.contains('light-mode');
+    const textColor = isLight ? '#52525b' : '#a1a1aa'; // Zinc-600 vs Zinc-400
+    const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.03)';
+    const emptyPieColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
+    
     // 1. Weekly Flow Chart Data (Income vs Expenses trend)
     // Gather last 7 days starting from today backward
     const labels = [];
@@ -1038,11 +1057,11 @@ function renderCharts() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: '#94a3b8', font: { family: 'Outfit' } } }
+                legend: { labels: { color: textColor, font: { family: 'Outfit' } } }
             },
             scales: {
-                x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#94a3b8' } },
-                y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#94a3b8' } }
+                x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                y: { grid: { color: gridColor }, ticks: { color: textColor } }
             }
         }
     });
@@ -1068,7 +1087,7 @@ function renderCharts() {
             labels: hasExpenses ? catLabels : ['Xarajatlar yo\'q'],
             datasets: [{
                 data: hasExpenses ? catData : [1],
-                backgroundColor: hasExpenses ? catColors : ['rgba(255,255,255,0.05)'],
+                backgroundColor: hasExpenses ? catColors : [emptyPieColor],
                 borderWidth: 0
             }]
         },
@@ -1078,7 +1097,7 @@ function renderCharts() {
             plugins: {
                 legend: {
                     position: 'right',
-                    labels: { color: '#94a3b8', font: { family: 'Outfit', size: 11 } }
+                    labels: { color: textColor, font: { family: 'Outfit', size: 11 } }
                 }
             },
             cutout: '70%'
@@ -1108,7 +1127,7 @@ function renderCharts() {
                 labels: hasFamExpenses ? famLabels : ['Ma\'lumotlar yo\'q'],
                 datasets: [{
                     data: hasFamExpenses ? famData : [1],
-                    backgroundColor: hasFamExpenses ? famColors.slice(0, famLabels.length) : ['rgba(255,255,255,0.05)'],
+                    backgroundColor: hasFamExpenses ? famColors.slice(0, famLabels.length) : [emptyPieColor],
                     borderWidth: 0
                 }]
             },
@@ -1118,7 +1137,7 @@ function renderCharts() {
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: '#94a3b8', font: { family: 'Outfit' } }
+                        labels: { color: textColor, font: { family: 'Outfit' } }
                     }
                 },
                 cutout: '60%'
@@ -1851,4 +1870,31 @@ window.copyInviteCode = function() {
     }).catch(err => {
         showToast("Nusxalab bo'lmadi!", "x");
     });
+};
+
+// Theme Toggle Logic
+window.toggleTheme = function() {
+    const isDark = document.body.classList.contains('dark-mode') || !document.body.classList.contains('light-mode');
+    if (isDark) {
+        document.body.classList.remove('dark-mode');
+        document.body.classList.add('light-mode');
+        localStorage.setItem('theme', 'light');
+    } else {
+        document.body.classList.remove('light-mode');
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+    }
+    
+    window.updateThemeToggleIcon();
+    renderCharts();
+};
+
+window.updateThemeToggleIcon = function() {
+    const btn = document.getElementById('theme-toggle-btn');
+    if (!btn) return;
+    const isLight = document.body.classList.contains('light-mode');
+    btn.innerHTML = `<i data-lucide="${isLight ? 'moon' : 'sun'}" style="width: 18px; height: 18px;"></i>`;
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 };
