@@ -135,23 +135,23 @@ h1, h2, h3, h4, h5, h6 {
 }
 .btn-primary {
     background-color: var(--accent);
-    color: white;
-    box-shadow: 0 4px 20px var(--accent-glow);
+    color: var(--bg-primary);
+    box-shadow: 0 4px 12px var(--accent-glow);
 }
 .btn-primary:hover {
     background-color: var(--accent-light);
     transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(46, 102, 255, 0.5);
+    box-shadow: 0 6px 16px var(--accent-glow);
 }
 .btn-accent {
     background-color: var(--success);
     color: white;
-    box-shadow: 0 4px 20px var(--success-glow);
+    box-shadow: 0 4px 12px var(--success-glow);
 }
 .btn-accent:hover {
     background-color: #34d399;
     transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 6px 16px var(--success-glow);
 }
 .btn-outline {
     background-color: transparent;
