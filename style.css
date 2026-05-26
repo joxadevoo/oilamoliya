@@ -1241,10 +1241,10 @@ select option {
     position: fixed;
     top: 2rem;
     right: 2rem;
-    background: rgba(13, 17, 34, 0.95);
-    border: 1px solid var(--border-glass-focus);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    color: white;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    color: var(--text-primary);
     padding: 1rem 1.5rem;
     border-radius: var(--radius-md);
     display: flex;
@@ -1255,7 +1255,7 @@ select option {
     animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 .toast-icon {
-    color: var(--accent-light);
+    color: var(--accent);
 }
 
 /* EMPTY STATES */
