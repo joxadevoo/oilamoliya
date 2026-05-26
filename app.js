@@ -224,6 +224,9 @@ async function loadFirebaseUserData(user) {
             state.user.name = userData.name;
             state.user.role = userData.role || 'Oila A\'zosi';
             
+            // Automatically sync local demo data to Firebase if Firestore is empty
+            await syncLocalDataToFirebase(userData.familyId, user.uid);
+            
             // Start live listeners
             setupFirebaseListeners();
             
@@ -239,6 +242,78 @@ async function loadFirebaseUserData(user) {
         console.error("Error loading user data:", err);
         showToast("Ma'lumotlarni yuklashda xatolik! Bazani tekshiring.", "alert-triangle");
         showAuthScreen();
+    }
+}
+
+async function syncLocalDataToFirebase(familyId, userId) {
+    const storedMembers = localStorage.getItem('demo_members');
+    const storedTransactions = localStorage.getItem('demo_transactions');
+    const storedBudgets = localStorage.getItem('demo_budgets');
+    const storedGoals = localStorage.getItem('demo_goals');
+
+    if (!storedTransactions && !storedMembers) return; // Nothing to sync
+
+    try {
+        const { doc, setDoc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+        const familyRef = `families/${familyId}`;
+
+        // 1. Check if Firestore transactions list is empty
+        const tSnap = await getDocs(collection(db, `${familyRef}/transactions`));
+        if (!tSnap.empty) {
+            // Firestore already has data, do not overwrite automatically to prevent duplicates
+            return;
+        }
+
+        showToast("Lokal ma'lumotlar Firebase-ga avtomatik yuklanmoqda...", "loader");
+
+        // 2. Import members
+        const localMembers = storedMembers ? JSON.parse(storedMembers) : DEMO_MEMBERS;
+        const memberIdMap = {};
+        for (const m of localMembers) {
+            const mData = { name: m.name, role: m.role, avatar: m.avatar || m.name.charAt(0).toUpperCase() };
+            // Map original member to current user if names or IDs match
+            const mId = (m.id === 'm1' || m.name.toLowerCase() === state.user.name.toLowerCase()) ? userId : m.id;
+            await setDoc(doc(db, `${familyRef}/members`, mId), mData);
+            memberIdMap[m.id] = mId;
+        }
+
+        // 3. Import budgets
+        const localBudgets = storedBudgets ? JSON.parse(storedBudgets) : DEMO_BUDGETS;
+        for (const b of localBudgets) {
+            await setDoc(doc(db, `${familyRef}/budgets`, b.id), { category: b.category, limit: Number(b.limit) });
+        }
+
+        // 4. Import goals
+        const localGoals = storedGoals ? JSON.parse(storedGoals) : DEMO_GOALS;
+        for (const g of localGoals) {
+            await setDoc(doc(db, `${familyRef}/goals`, g.id), { name: g.name, target: Number(g.target), saved: Number(g.saved) });
+        }
+
+        // 5. Import transactions
+        const localTransactions = storedTransactions ? JSON.parse(storedTransactions) : DEMO_TRANSACTIONS;
+        for (const t of localTransactions) {
+            const mappedMemberId = memberIdMap[t.memberId] || t.memberId;
+            const tData = {
+                amount: Number(t.amount),
+                category: t.category,
+                wallet: t.wallet,
+                memberId: mappedMemberId,
+                date: t.date,
+                description: t.description,
+                type: t.type
+            };
+            await setDoc(doc(db, `${familyRef}/transactions`, t.id), tData);
+        }
+
+        // Clear local storage after successful sync so it doesn't run again
+        localStorage.removeItem('demo_members');
+        localStorage.removeItem('demo_transactions');
+        localStorage.removeItem('demo_budgets');
+        localStorage.removeItem('demo_goals');
+
+        showToast("Barcha mahalliy ma'lumotlar Firebase-ga to'liq yuklandi!", "check");
+    } catch (e) {
+        console.error("Auto sync to Firebase failed:", e);
     }
 }
 
@@ -494,9 +569,12 @@ function setupFormListeners() {
             
             showToast("Ro'yxatdan o'tilmoqda...", "loader");
             
-            // Create user auth
-            const cred = await fbCreateUser(auth, email, password);
-            const user = cred.user;
+            // Create user auth or use existing session
+            let user = auth.currentUser;
+            if (!user) {
+                const cred = await fbCreateUser(auth, email, password);
+                user = cred.user;
+            }
             
             let familyId = "";
             let familyName = "";
@@ -608,6 +686,11 @@ function renderUI() {
     renderGoals();
     renderFamilyMembers();
     populateSelectOptions();
+    
+    // Automatically update/render main transactions table with active filters
+    if (window.applyFilters) {
+        window.applyFilters();
+    }
     
     // Update active section visibility
     switchSectionInternally(state.activeSection);
