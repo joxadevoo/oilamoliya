@@ -951,7 +951,15 @@ function populateSelectOptions() {
     // 1. Transaction member select
     const memberSelect = document.getElementById('trans-member');
     if (memberSelect) {
-        memberSelect.innerHTML = state.members.map(m => `<option value="${m.id}">${m.name} (${m.role})</option>`).join('');
+        if (state.members.length === 0) {
+            // Robust fallback if members list hasn't loaded from Firestore yet
+            const defaultId = state.user?.uid || 'm1';
+            const defaultName = state.user?.name || 'Foydalanuvchi';
+            const defaultRole = state.user?.role || 'A\'zo';
+            memberSelect.innerHTML = `<option value="${defaultId}">${defaultName} (${defaultRole})</option>`;
+        } else {
+            memberSelect.innerHTML = state.members.map(m => `<option value="${m.id}">${m.name} (${m.role})</option>`).join('');
+        }
     }
     
     // 2. Transaction Category select is populated in openTransactionModal() based on income/expense
