@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OilaMoliya - Smart Finance Tracker</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS Style -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i data-lucide="info" class="toast-icon"></i>
+        <span id="toast-message">Xabar matni</span>
+    </div>
+
+    <!-- Firebase Connection Modal (Triggered from Settings or if Cloud mode fails) -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content glass auth-card">
+            <div class="auth-header">
+                <div class="logo">
+                    <i data-lucide="wallet" class="logo-icon-large"></i>
+                    <h2>Oila<span>Moliya</span></h2>
+                </div>
+                <p id="auth-subtitle">Tizimga kiring yoki yangi oila guruhini yarating</p>
+            </div>
+            
+            <!-- Auth Tab Headers -->
+            <div class="tab-headers">
+                <button class="tab-btn active" onclick="switchAuthTab('login')">Kirish</button>
+                <button class="tab-btn" onclick="switchAuthTab('register')">Ro'yxatdan o'tish</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <div class="input-group">
+                    <label for="login-email"><i data-lucide="mail"></i> Email</label>
+                    <input type="email" id="login-email" required placeholder="example@mail.com">
+                </div>
+                <div class="input-group">
+                    <label for="login-password"><i data-lucide="lock"></i> Parol</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Tizimga kirish <i data-lucide="arrow-right"></i></button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form">
+                <div class="input-group">
+                    <label for="register-name"><i data-lucide="user"></i> Ismingiz</label>
+                    <input type="text" id="register-name" required placeholder="Ismingizni yozing">
+                </div>
+                <div class="input-group">
+                    <label for="register-email"><i data-lucide="mail"></i> Email</label>
+                    <input type="email" id="register-email" required placeholder="example@mail.com">
+                </div>
+                <div class="input-group">
+                    <label for="register-password"><i data-lucide="lock"></i> Parol</label>
+                    <input type="password" id="register-password" required placeholder="Kamida 6 ta belgi">
+                </div>
+                <div class="input-group-row">
+                    <div class="input-group">
+                        <label for="family-choice"><i data-lucide="users"></i> Guruh</label>
+                        <select id="family-choice" onchange="toggleFamilyInput()">
+                            <option value="create">Yangi oila yaratish</option>
+                            <option value="join">Oila guruhiga qo'shilish</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Create Family Group Name -->
+                <div class="input-group" id="group-name-wrapper">
+                    <label for="create-group-name"><i data-lucide="home"></i> Oila guruhi nomi</label>
+                    <input type="text" id="create-group-name" placeholder="Masalan: Joxadlar Oilasi">
+                </div>
+                <!-- Join Family Group Invite Code -->
+                <div class="input-group hidden" id="invite-code-wrapper">
+                    <label for="join-invite-code"><i data-lucide="key"></i> Oila taklif kodi</label>
+                    <input type="text" id="join-invite-code" placeholder="FAM-XXXX-XXXX">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Ro'yxatdan o'tish <i data-lucide="check"></i></button>
+            </form>
+
+            <!-- Registration Form ended -->
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app-container" class="app-layout hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass">
+            <div class="sidebar-brand">
+                <div class="logo">
+                    <i data-lucide="wallet" class="logo-icon"></i>
+                    <h2>Oila<span>Moliya</span></h2>
+                </div>
+                <div class="demo-badge hidden" id="app-demo-badge">Demo</div>
+            </div>
+
+            <!-- Active User Info -->
+            <div class="active-profile glass-panel">
+                <div class="avatar" id="user-avatar-char">J</div>
+                <div class="profile-details">
+                    <span class="profile-name" id="display-user-name">Foydalanuvchi</span>
+                    <span class="profile-role" id="display-family-name">Joxadlar Oilasi</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="switchSection('dashboard')">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('transactions')">
+                    <i data-lucide="arrow-left-right"></i>
+                    <span>Tranzaksiyalar</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('family')">
+                    <i data-lucide="users"></i>
+                    <span>Oila a'zolari</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('budgets')">
+                    <i data-lucide="pie-chart"></i>
+                    <span>Byudjet & Maqsad</span>
+                </button>
+                <button class="nav-item" onclick="switchSection('settings')">
+                    <i data-lucide="settings"></i>
+                    <span>Sozlamalar</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <!-- Invite Code Panel (Visible if authenticated) -->
+                <div class="invite-code-card glass-panel" id="invite-box">
+                    <span class="invite-title">Oila taklif kodi</span>
+                    <div class="invite-code-wrapper">
+                        <span id="share-invite-code">FAM-XXXX-XXXX</span>
+                        <button onclick="copyInviteCode()" title="Nusxalash"><i data-lucide="copy"></i></button>
+                    </div>
+                </div>
+                <button class="btn btn-logout btn-block" onclick="handleLogout()">
+                    <i data-lucide="log-out"></i>
+                    <span>Chiqish</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header glass">
+                <div class="header-search">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="global-search" placeholder="Tranzaksiyalarni qidirish..." oninput="handleGlobalSearch(this.value)">
+                </div>
+                <div class="header-actions">
+                    <div class="currency-selector glass">
+                        <select id="currency-select" onchange="changeCurrency(this.value)">
+                            <option value="UZS">So'm (UZS)</option>
+                            <option value="USD">Dollar (USD)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="openTransactionModal('expense')">
+                        <i data-lucide="plus-circle"></i>
+                        <span>Xarajat qo'shish</span>
+                    </button>
+                    <button class="btn btn-accent" onclick="openTransactionModal('income')">
+                        <i data-lucide="plus-circle"></i>
+                        <span>Daromad qo'shish</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Sections Container -->
+            <div class="content-body">
+                
+                <!-- SECTION: DASHBOARD -->
+                <section id="section-dashboard" class="content-section active">
+                    <div class="section-header">
+                        <div>
+                            <h1>Moliyaviy Boshqaruv</h1>
+                            <p class="text-secondary">Oilangizning moliyaviy oqimini real-vaqtda kuzatib boring</p>
+                        </div>
+                        <div class="date-badge">
+                            <i data-lucide="calendar"></i>
+                            <span id="current-date-text">2026-yil, 26-May</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards Grid -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card glass card-balance">
+                            <div class="kpi-info">
+                                <span class="kpi-title">Umumiy Balans</span>
+                                <h2 class="kpi-value" id="kpi-total-balance">0 UZS</h2>
+                                <span class="kpi-subtext text-accent" id="kpi-balance-desc">Barcha hisoblar bo'yicha</span>
+                            </div>
+                            <div class="kpi-icon-wrapper bg-blue-glow">
+                                <i data-lucide="wallet"></i>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass card-income">
+                            <div class="kpi-info">
+                                <span class="kpi-title">Daromad (Joriy oy)</span>
+                                <h2 class="kpi-value text-accent" id="kpi-total-income">0 UZS</h2>
+                                <span class="kpi-subtext" id="kpi-income-trend">▲ O'tgan oyga nisbatan</span>
+                            </div>
+                            <div class="kpi-icon-wrapper bg-green-glow">
+                                <i data-lucide="trending-up"></i>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass card-expense">
+                            <div class="kpi-info">
+                                <span class="kpi-title">Xarajat (Joriy oy)</span>
+                                <h2 class="kpi-value text-danger" id="kpi-total-expense">0 UZS</h2>
+                                <span class="kpi-subtext" id="kpi-expense-trend">▼ Rejadagi byudjet ichida</span>
+                            </div>
+                            <div class="kpi-icon-wrapper bg-red-glow">
+                                <i data-lucide="trending-down"></i>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card glass card-members">
+                            <div class="kpi-info">
+                                <span class="kpi-title">Oila a'zolari</span>
+                                <h2 class="kpi-value" id="kpi-active-members">0 ta</h2>
+                                <span class="kpi-subtext" id="kpi-members-active-count">Barchasi faol</span>
+                            </div>
+                            <div class="kpi-icon-wrapper bg-purple-glow">
+                                <i data-lucide="users"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts & Analysis Grid -->
+                    <div class="grid-2-cols">
+                        <!-- Chart 1: Income vs Expense Line -->
+                        <div class="card glass chart-card">
+                            <div class="card-header">
+                                <h3><i data-lucide="activity"></i> Moliyaviy oqim (Haftalik)</h3>
+                                <span class="text-secondary small">Daromadlar va xarajatlar tahlili</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="flowChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Expense Categories Doughnut -->
+                        <div class="card glass chart-card">
+                            <div class="card-header">
+                                <h3><i data-lucide="pie-chart"></i> Xarajatlar toifalari</h3>
+                                <span class="text-secondary small">Ushbu oydagi xarajatlar taqsimoti</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="categoriesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tables Grid -->
+                    <div class="grid-2-cols margin-top">
+                        <!-- Recent Transactions -->
+                        <div class="card glass list-card">
+                            <div class="card-header">
+                                <h3><i data-lucide="history"></i> So'nggi operatsiyalar</h3>
+                                <button class="btn-text" onclick="switchSection('transactions')">Barchasi <i data-lucide="chevron-right"></i></button>
+                            </div>
+                            <div class="recent-list" id="dashboard-recent-transactions">
+                                <!-- Loaded dynamically via JS -->
+                                <div class="empty-state">
+                                    <i data-lucide="plus-circle" class="empty-icon"></i>
+                                    <p>Tranzaksiyalar topilmadi. Qo'shishni boshlang!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Budgets status progress -->
+                        <div class="card glass list-card">
+                            <div class="card-header">
+                                <h3><i data-lucide="gauge"></i> Byudjet limitlari holati</h3>
+                                <button class="btn-text" onclick="switchSection('budgets')">Boshqarish <i data-lucide="chevron-right"></i></button>
+                            </div>
+                            <div class="budget-status-list" id="dashboard-budgets-list">
+                                <!-- Loaded dynamically via JS -->
+                                <div class="empty-state">
+                                    <i data-lucide="pie-chart" class="empty-icon"></i>
+                                    <p>Hozircha oylik byudjet limitlari belgilanmagan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION: TRANSACTIONS -->
+                <section id="section-transactions" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h1>Tranzaksiyalar Tarixi</h1>
+                            <p class="text-secondary">Daromad va xarajatlaringiz ro'yxatini boshqaring va saralang</p>
+                        </div>
+                    </div>
+
+                    <!-- Filters Panel -->
+                    <div class="filters-panel glass margin-bottom">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="filter-type">Turi</label>
+                                <select id="filter-type" onchange="applyFilters()">
+                                    <option value="all">Barchasi</option>
+                                    <option value="income">Daromad (+)</option>
+                                    <option value="expense">Xarajat (-)</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-category">Toifa</label>
+                                <select id="filter-category" onchange="applyFilters()">
+                                    <option value="all">Barcha toifalar</option>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-member">Oila a'zosi</label>
+                                <select id="filter-member" onchange="applyFilters()">
+                                    <option value="all">Barcha a'zolar</option>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-sort">Saralash</label>
+                                <select id="filter-sort" onchange="applyFilters()">
+                                    <option value="date-desc">Eng yangi</option>
+                                    <option value="date-asc">Eng eski</option>
+                                    <option value="amount-desc">Katta summalar</option>
+                                    <option value="amount-asc">Kichik summalar</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transactions Table -->
+                    <div class="card glass overflow-x">
+                        <table class="table" id="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Sana</th>
+                                    <th>Toifa & Tavsif</th>
+                                    <th>A'zo</th>
+                                    <th>Hamyon</th>
+                                    <th>Tur</th>
+                                    <th>Summa</th>
+                                    <th>Amallar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body">
+                                <!-- Loaded dynamically via JS -->
+                            </tbody>
+                        </table>
+                        <div id="transactions-empty" class="empty-state hidden padding-large">
+                            <i data-lucide="filter" class="empty-icon"></i>
+                            <p>Mos keladigan tranzaksiyalar topilmadi.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION: FAMILY -->
+                <section id="section-family" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h1>Oila Hubi (Oila A'zolari)</h1>
+                            <p class="text-secondary">Oila a'zolaringiz faolligi va ularning xarajatlardagi ulushi</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openFamilyMemberModal()">
+                            <i data-lucide="user-plus"></i>
+                            <span>Oila a'zosini qo'shish</span>
+                        </button>
+                    </div>
+
+                    <!-- Family Breakdown Summary Cards -->
+                    <div class="family-grid" id="family-members-grid">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+
+                    <!-- Real-Time Activity Feed & Contribution -->
+                    <div class="grid-2-cols margin-top">
+                        <!-- Contributions Chart -->
+                        <div class="card glass chart-card">
+                            <div class="card-header">
+                                <h3><i data-lucide="donut"></i> Xarajatlar hissasi</h3>
+                                <p class="text-secondary small">Har bir oila a'zosining xarajatlardagi foiz ulushi</p>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="familyContributionsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Live activity stream -->
+                        <div class="card glass list-card">
+                            <div class="card-header">
+                                <h3><i data-lucide="activity"></i> Jonli faollik tasmasi (Cloud Feed)</h3>
+                                <span class="pulse-indicator"></span>
+                            </div>
+                            <div class="activity-feed" id="family-activity-feed">
+                                <!-- Loaded dynamically via JS -->
+                                <div class="empty-state">
+                                    <i data-lucide="bell" class="empty-icon"></i>
+                                    <p>Hozircha jonli faolliklar yo'q.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION: BUDGET & FINANCIAL GOALS -->
+                <section id="section-budgets" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h1>Byudjet & Moliyaviy Maqsadlar</h1>
+                            <p class="text-secondary">Limitlar belgilang va orzularingiz uchun jamg'arma boshlang</p>
+                        </div>
+                        <div class="section-actions">
+                            <button class="btn btn-primary" onclick="openBudgetModal()">
+                                <i data-lucide="plus-circle"></i>
+                                <span>Oylik byudjet belgilash</span>
+                            </button>
+                            <button class="btn btn-accent" onclick="openGoalModal()">
+                                <i data-lucide="target"></i>
+                                <span>Yangi maqsad qo'shish</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid-2-cols">
+                        <!-- Budgets List Column -->
+                        <div class="card glass">
+                            <div class="card-header">
+                                <h3><i data-lucide="gauge"></i> Oylik Byudjet Limitlari</h3>
+                                <p class="text-secondary small">Kategoriyalar uchun oy davomida ruxsat etilgan xarajatlar</p>
+                            </div>
+                            <div class="budget-items-container" id="budgets-full-list">
+                                <!-- Loaded dynamically via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Savings Goals Column -->
+                        <div class="card glass">
+                            <div class="card-header">
+                                <h3><i data-lucide="award"></i> Jamg'arma maqsadlari</h3>
+                                <p class="text-secondary small">Orzularingiz va yirik xaridlar uchun yig'ilayotgan pullar</p>
+                            </div>
+                            <div class="goals-items-container" id="goals-full-list">
+                                <!-- Loaded dynamically via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION: SETTINGS -->
+                <section id="section-settings" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h1>Sozlamalar & Bulutli Ulanish</h1>
+                            <p class="text-secondary">Dasturni moslashtiring va Firebase bilan bulutga ulang</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-2-cols">
+                        <!-- Cloud Settings -->
+                        <div class="card glass">
+                            <div class="card-header">
+                                <h3><i data-lucide="cloud"></i> Firebase Cloud Integratsiyasi</h3>
+                                <p class="text-secondary small">Turli telefon va shaxslar ma'lumotlarini real-vaqtda sinxron qilish uchun</p>
+                            </div>
+                            <div class="card-body form-styles">
+                                <div class="alert alert-warning" id="firebase-status-alert">
+                                    <i data-lucide="alert-triangle"></i>
+                                    <div>
+                                        <strong>Avtonom rejimda ishlayapti!</strong>
+                                        <p>Hozirda ilova local demo holatida ishlamoqda. Ma'lumotlaringiz faqat shu brauzerda qoladi. Bulutga ulash uchun quyida Firebase SDK-ni kiriting:</p>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="settings-firebase-config">Firebase Config (JSON formatida)</label>
+                                    <textarea id="settings-firebase-config" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "oilamoliya.firebaseapp.com",
+  "projectId": "oilamoliya",
+  "storageBucket": "oilamoliya.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}' rows="8"></textarea>
+                                </div>
+                                <button class="btn btn-primary" onclick="saveFirebaseConfig()">Firebase-ga ulash <i data-lucide="link"></i></button>
+                                <button class="btn btn-text text-danger" onclick="clearFirebaseConfig()">Konfiguratsiyani o'chirish</button>
+                            </div>
+                        </div>
+
+                        <!-- Data backup & local preferences -->
+                        <div class="card glass">
+                            <div class="card-header">
+                                <h3><i data-lucide="database"></i> Ma'lumotlarni boshqarish</h3>
+                                <p class="text-secondary small">Mahalliy zaxira nusxalarini eksport yoki import qilish</p>
+                            </div>
+                            <div class="card-body form-styles">
+                                <div class="settings-actions">
+                                    <div class="action-item">
+                                        <h4>Zaxira nusxa yaratish (Backup JSON)</h4>
+                                        <p class="text-secondary small">Hozirgacha kiritilgan barcha oilaviy tranzaksiyalar, a'zolar va maqsadlarni bitta fayl sifatida kompyuterga yuklab oling.</p>
+                                        <button class="btn btn-outline" onclick="exportDataJSON()"><i data-lucide="download"></i> Faylga yuklab olish</button>
+                                    </div>
+                                    <hr class="divider">
+                                    <div class="action-item">
+                                        <h4>Zaxira nusxani yuklash (Restore JSON)</h4>
+                                        <p class="text-secondary small">Avval saqlab qo'yilgan moliya ma'lumotlarini dasturga qayta tiklang. Ehtiyot bo'ling: bu joriy ma'lumotlarni o'chirib yuboradi!</p>
+                                        <input type="file" id="import-file" class="hidden" accept=".json" onchange="importDataJSON(event)">
+                                        <button class="btn btn-outline-danger" onclick="document.getElementById('import-file').click()"><i data-lucide="upload"></i> JSON fayl tanlash</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: ADD/EDIT TRANSACTION -->
+    <div id="transaction-modal" class="modal-overlay hidden">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3 id="transaction-modal-title">Operatsiya qo'shish</h3>
+                <button class="btn-close" onclick="closeTransactionModal()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="transaction-form" onsubmit="handleTransactionSubmit(event)">
+                <input type="hidden" id="trans-id">
+                <input type="hidden" id="trans-type" value="expense">
+                
+                <div class="input-group">
+                    <label for="trans-amount">Summa</label>
+                    <input type="number" id="trans-amount" required placeholder="0.00" min="1" step="any" class="input-large">
+                </div>
+
+                <div class="grid-2-cols-simple">
+                    <div class="input-group">
+                        <label for="trans-category">Toifa</label>
+                        <select id="trans-category" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="trans-wallet">Hisob (Hamyon)</label>
+                        <select id="trans-wallet" required>
+                            <option value="Plastik Karta">Plastik Karta</option>
+                            <option value="Naqd Pul">Naqd Pul</option>
+                            <option value="Jamg'arma">Jamg'arma</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid-2-cols-simple">
+                    <div class="input-group">
+                        <label for="trans-member">Kiritgan a'zo</label>
+                        <select id="trans-member" required>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="trans-date">Sana</label>
+                        <input type="date" id="trans-date" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="trans-description">Qisqacha tavsif (izoh)</label>
+                    <input type="text" id="trans-description" placeholder="Masalan: Uy ro'zg'or buyumlari uchun" required>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeTransactionModal()">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary" id="trans-btn-submit">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD FAMILY MEMBER -->
+    <div id="family-member-modal" class="modal-overlay hidden">
+        <div class="modal-content glass size-small">
+            <div class="modal-header">
+                <h3>Oila a'zosini qo'shish</h3>
+                <button class="btn-close" onclick="closeFamilyMemberModal()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="family-member-form" onsubmit="handleFamilyMemberSubmit(event)">
+                <div class="input-group">
+                    <label for="member-name">A'zo ismi</label>
+                    <input type="text" id="member-name" required placeholder="Masalan: Dilnoza">
+                </div>
+                <div class="input-group">
+                    <label for="member-role">Oila roli (Lavozimi)</label>
+                    <select id="member-role">
+                        <option value="Ota">Ota</option>
+                        <option value="Ona">Ona</option>
+                        <option value="O'g'il">O'g'il</option>
+                        <option value="Qiz">Qiz</option>
+                        <option value="Boshqa">Boshqa</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeFamilyMemberModal()">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary">Qo'shish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD BUDGET LIMIT -->
+    <div id="budget-modal" class="modal-overlay hidden">
+        <div class="modal-content glass size-small">
+            <div class="modal-header">
+                <h3>Oylik Byudjet Cheklovi</h3>
+                <button class="btn-close" onclick="closeBudgetModal()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="budget-form" onsubmit="handleBudgetSubmit(event)">
+                <div class="input-group">
+                    <label for="budget-category">Kategoriya</label>
+                    <select id="budget-category" required>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="budget-limit">Oylik limit summasi</label>
+                    <input type="number" id="budget-limit" required placeholder="Summani yozing" min="1000">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeBudgetModal()">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary">Tasdiqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/CONTRIBUTE SAVINGS GOAL -->
+    <div id="goal-modal" class="modal-overlay hidden">
+        <div class="modal-content glass size-small">
+            <div class="modal-header">
+                <h3 id="goal-modal-title">Yangi jamg'arma maqsadi</h3>
+                <button class="btn-close" onclick="closeGoalModal()"><i data-lucide="x"></i></button>
+            </div>
+            <form id="goal-form" onsubmit="handleGoalSubmit(event)">
+                <input type="hidden" id="goal-id">
+                <input type="hidden" id="goal-mode" value="create"> <!-- create or contribute -->
+
+                <!-- Create Mode inputs -->
+                <div id="goal-create-fields">
+                    <div class="input-group">
+                        <label for="goal-name">Maqsad nomi (Orzu nomi)</label>
+                        <input type="text" id="goal-name" placeholder="Masalan: Yozgi ta'til yoki Yangi Chevrolet">
+                    </div>
+                    <div class="input-group">
+                        <label for="goal-target">Kerakli jami summa</label>
+                        <input type="number" id="goal-target" placeholder="Jami miqdorni kiriting" min="1000">
+                    </div>
+                    <div class="input-group">
+                        <label for="goal-initial">Boshlang'ich jamg'arma (ixtiyoriy)</label>
+                        <input type="number" id="goal-initial" placeholder="0" min="0" value="0">
+                    </div>
+                </div>
+
+                <!-- Contribute Mode inputs -->
+                <div id="goal-contribute-fields" class="hidden">
+                    <div class="input-group">
+                        <label for="goal-contribute-amount">Qo'shiladigan summa</label>
+                        <input type="number" id="goal-contribute-amount" placeholder="Qancha qo'shasiz?" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label for="goal-contribute-wallet">Mablag' manbasi</label>
+                        <select id="goal-contribute-wallet">
+                            <option value="Plastik Karta">Plastik Karta</option>
+                            <option value="Naqd Pul">Naqd Pul</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeGoalModal()">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary" id="goal-btn-submit">Yaratish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS Application -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
