@@ -198,6 +198,15 @@ async function loadFirebaseUserData(user) {
             state.family.id = userData.familyId;
             state.family.name = userData.familyName;
             
+            // Fetch family configuration (like currency)
+            const familySnap = await getDoc(doc(db, 'families', userData.familyId));
+            if (snapExists(familySnap)) {
+                const familyData = familySnap.data();
+                state.currency = familyData.currency || 'UZS';
+                const curSelect = document.getElementById('currency-select');
+                if (curSelect) curSelect.value = state.currency;
+            }
+            
             // Save user details
             state.user.name = userData.name;
             state.user.role = userData.role || 'Oila A\'zosi';
@@ -229,9 +238,24 @@ async function setupFirebaseListeners() {
     unsubscribeList.forEach(unsub => unsub());
     unsubscribeList = [];
     
-    const { collection, onSnapshot, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const { collection, doc, onSnapshot, query, orderBy } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
     
     const familyRef = `families/${state.family.id}`;
+    
+    // 0. Family config & name listener (Syncs currency and family name in real-time!)
+    const famUnsub = onSnapshot(doc(db, 'families', state.family.id), (snapshot) => {
+        if (snapExists(snapshot)) {
+            const famData = snapshot.data();
+            state.family.name = famData.name;
+            state.currency = famData.currency || 'UZS';
+            
+            const curSelect = document.getElementById('currency-select');
+            if (curSelect) curSelect.value = state.currency;
+            dom.displayFamilyName.innerText = state.family.name;
+            renderUI();
+        }
+    });
+    unsubscribeList.push(famUnsub);
     
     // 1. Members
     const mUnsub = onSnapshot(collection(db, `${familyRef}/members`), (snapshot) => {
@@ -604,9 +628,21 @@ function formatMoney(amount) {
     return new Intl.NumberFormat('uz-UZ', { style: 'decimal' }).format(amount) + " UZS";
 }
 
-window.changeCurrency = function(currency) {
+window.changeCurrency = async function(currency) {
     state.currency = currency;
     renderUI();
+    
+    if (!state.isDemo && db) {
+        try {
+            const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+            await updateDoc(doc(db, 'families', state.family.id), {
+                currency: currency
+            });
+            showToast("Oila valyutasi bulutda yangilandi!", "check");
+        } catch (e) {
+            console.error("Error updating currency in Firestore:", e);
+        }
+    }
 };
 
 // Navigation switcher & Routing
