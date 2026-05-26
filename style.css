@@ -14,6 +14,8 @@
     --border-item: rgba(255, 255, 255, 0.04);
     --bg-input: rgba(255, 255, 255, 0.04);
     --bg-track: rgba(255, 255, 255, 0.06);
+    --bg-mobile-nav: rgba(14, 14, 17, 0.9);
+    --bg-header-sticky: rgba(9, 9, 11, 0.85);
     
     --accent: #ffffff; /* Clean white primary accent for dark mode */
     --accent-glow: rgba(255, 255, 255, 0.05);
@@ -57,6 +59,8 @@ body.light-mode {
     --border-item: rgba(0, 0, 0, 0.06);
     --bg-input: #ffffff;
     --bg-track: #e4e4e7;
+    --bg-mobile-nav: rgba(255, 255, 255, 0.9);
+    --bg-header-sticky: rgba(250, 250, 250, 0.85);
     
     --accent: #09090b; /* Zinc-950 black primary accent for light mode */
     --accent-glow: rgba(9, 9, 11, 0.05);
@@ -416,6 +420,13 @@ body.dark-mode .nav-item.active {
     justify-content: space-between;
     gap: 1.5rem;
     border-radius: var(--radius-lg);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    background: var(--bg-header-sticky);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-glass);
 }
 .header-search {
     position: relative;
@@ -1336,10 +1347,10 @@ select option {
         border-right: none;
         border-bottom: none;
         z-index: 99;
-        background: rgba(10, 14, 28, 0.88); /* darker for solid contrast */
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.4);
+        background: var(--bg-mobile-nav);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
     }
     
     .mobile-nav-item {
@@ -1370,12 +1381,12 @@ select option {
     }
     
     .mobile-nav-item.active {
-        color: var(--accent-light);
+        color: var(--accent);
         transform: translateY(-2px);
     }
     
     .mobile-nav-item.active i {
-        filter: drop-shadow(0 0 6px var(--accent-light));
+        filter: drop-shadow(0 0 6px var(--accent-glow));
     }
     
     /* Header layout optimization */
