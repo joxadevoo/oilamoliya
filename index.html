@@ -537,6 +537,30 @@
 
             </div>
         </main>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <nav class="mobile-nav glass">
+            <button class="mobile-nav-item active" onclick="switchSection('dashboard')">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Panel</span>
+            </button>
+            <button class="mobile-nav-item" onclick="switchSection('transactions')">
+                <i data-lucide="arrow-left-right"></i>
+                <span>Tarix</span>
+            </button>
+            <button class="mobile-nav-item" onclick="switchSection('family')">
+                <i data-lucide="users"></i>
+                <span>Oila</span>
+            </button>
+            <button class="mobile-nav-item" onclick="switchSection('budgets')">
+                <i data-lucide="pie-chart"></i>
+                <span>Reja</span>
+            </button>
+            <button class="mobile-nav-item" onclick="switchSection('settings')">
+                <i data-lucide="settings"></i>
+                <span>Sozlamalar</span>
+            </button>
+        </nav>
     </div>
 
     <!-- MODAL: ADD/EDIT TRANSACTION -->

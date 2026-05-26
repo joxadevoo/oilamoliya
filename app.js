@@ -619,6 +619,7 @@ function switchSectionInternally(sectionId) {
     state.activeSection = sectionId;
     document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.mobile-nav-item').forEach(btn => btn.classList.remove('active'));
     
     const activeSec = document.getElementById(`section-${sectionId}`);
     if (activeSec) activeSec.classList.add('active');
@@ -629,6 +630,12 @@ function switchSectionInternally(sectionId) {
     const index = mapping[sectionId];
     if (index !== undefined && navButtons[index]) {
         navButtons[index].classList.add('active');
+    }
+
+    // Highlight correct mobile bottom nav button
+    const mobileNavButtons = document.querySelectorAll('.mobile-nav-item');
+    if (index !== undefined && mobileNavButtons[index]) {
+        mobileNavButtons[index].classList.add('active');
     }
 }
 
